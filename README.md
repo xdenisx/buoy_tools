@@ -1,6 +1,6 @@
 # buoy_tools
 
-A package for buoy data processing. Initially designed for OMB and SIMBA buoy position data handling. The current finctinaity includes:
+A package for buoy data processing. Initially designed for OMB and SIMBA buoy position data handling. The current functionality includes:
 
 - text file parsing (CSV)
 - exporting to GIS format (ESRI shapefile)
