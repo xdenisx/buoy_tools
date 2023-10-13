@@ -7,3 +7,4 @@ A package for buoy data processing. Initially designed for OMB and SIMBA buoy po
 - plotting of buoy tracks on a map with pre-defined or calculated map extent
 - selection by date time intervals
 - filtering artificial positions by a speed threshold
+- adding coincident CARRA reanalysis data
