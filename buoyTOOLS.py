@@ -551,7 +551,7 @@ class BUOYtools:
 				for index, row in self.data[ibuoy].iterrows():
 					x_coord = row['geometry'].x
 					y_coord = row['geometry'].y
-					print(f'''\n{row['# Time']}, {x_coord}, {y_coord}''')
+					#print(f'''\n{row['# Time']}, {x_coord}, {y_coord}''')
 
 					# Find closes point in space
 					stn_lat = y_coord
@@ -575,13 +575,7 @@ class BUOYtools:
 
 					# Look through all varialbles in reanalysis data
 					for ivar in self.carra_vars_ll:
-						print('{} {:.4f} {:.4f}, Extracting {} for {:.4f} {:.4f}'.format(target_time,
-																						 stn_lon,
-																						 stn_lat,
-																						 ivar,
-																						 grid_lon,
-																						 grid_lat))
-
+						#print('{} {:.4f} {:.4f}, Extracting {} for {:.4f} {:.4f}'.format(target_time, stn_lon, stn_lat, ivar, grid_lon, grid_lat))
 						# Select data by closest datetime
 						temp = getattr(self, f'ds_{ivar}')
 						data_carra_dt = temp[ivar].sel(time=target_time, method='nearest')
