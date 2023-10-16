@@ -50,8 +50,6 @@ class BUOYtools:
 		self.speed_th = speed_th
 		self.data = {}
 		self.add_carra_data = add_carra_data
-		# !Testing
-		print(f'carra data: {add_carra_data}')
 
 		if self.start_date is not None:
 			try:
@@ -229,6 +227,7 @@ class BUOYtools:
 					lat1 = None
 					azimuth1, azimuth2, distance = None, None, None
 		self.data[filename] = df1
+		self.data.set_index("# Time")
 		return df1
 
 	def csv2shp(self):
