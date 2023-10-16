@@ -227,7 +227,6 @@ class BUOYtools:
 					lat1 = None
 					azimuth1, azimuth2, distance = None, None, None
 		self.data[filename] = df1
-		self.data.set_index("# Time")
 		return df1
 
 	def csv2shp(self):
@@ -591,5 +590,6 @@ class BUOYtools:
 				ibuoy_id = re.findall(r'\d+', ibuoy)[0]
 				os.makedirs(out_dir, exist_ok=True)
 				self.data[ibuoy].to_csv(f'{out_dir}/{ibuoy_id}_CARRA.csv')
+				self.data[ibuoy].set_index("# Time")
 		else:
 			pass
