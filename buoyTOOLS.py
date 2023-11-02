@@ -505,8 +505,10 @@ class BUOYtools:
 			# Get all variable names
 			ds = xr.open_dataset(self.carra_fname, engine="cfgrib")
 			self.carra_vars_ll = list(ds.keys())
-			# Add t2m manually
-			self.carra_vars_ll.append('t2m')
+
+			# Add variables manually
+			self.carra_vars_ll.append('wdir10')
+			self.carra_vars_ll.append('si10')
 
 			# Create dataframe for each of the variables
 			for ivar in self.carra_vars_ll:
@@ -528,6 +530,11 @@ class BUOYtools:
 			# Ice surface temperature
 			if hasattr(self, 'ds_ist'):
 				self.ds_ist = self.ds_ist - 273.15
+			else:
+				pass
+			# Skin temperature
+			if hasattr(self, 'ds_skt'):
+				self.ds_skt = self.ds_skt - 273.15
 			else:
 				pass
 
