@@ -594,3 +594,144 @@ class BUOYtools:
 				self.data[ibuoy].set_index("# Time")
 		else:
 			pass
+
+	def add_era5(self, carra_fname, out_dir):
+		''' Add closest ERA5 reanalysis  data from a grib file '''
+		try:
+			import cfgrib
+			run = 1
+		except:
+			print('Error: cfgrib library is required. Try to install: pip install cfgrib')
+			run = 0
+
+		if run == 1:
+			self.carra_fname = carra_fname
+			print(f'Coincident data from {self.carra_fname} will be added.')
+
+			# Get all variable names
+			ds = xr.open_dataset(self.carra_fname, engine="cfgrib")
+			self.carra_vars_ll = list(ds.keys())
+
+			# Add variables manually
+			self.carra_vars_ll.append('mtpr')
+			self.carra_vars_ll.append('ssrd')
+			self.carra_vars_ll.append('strd')
+			self.carra_vars_ll.append('mcpr')
+			self.carra_vars_ll.append('tp')
+
+			# Create dataframe for each of the variables
+			for ivar in self.carra_vars_ll:
+				print(ivar)
+				setattr(self, f'ds_{ivar}', xr.open_dataset(self.carra_fname, engine="cfgrib",
+															backend_kwargs={'filter_by_keys': {'cfVarName': ivar}}))
+
+			# Special rule for mtpr variable
+			if hasattr(self, 'ds_mtpr'):
+				self.ds_mtpr = self.ds_mtpr.mean(dim='step')
+			else:
+				pass
+
+			# Special rule for ssrd variable
+			if hasattr(self, 'ds_ssrd'):
+				self.ds_ssrd = self.ds_ssrd.mean(dim='step')
+			else:
+				pass
+
+			# Special rule for strd variable
+			if hasattr(self, 'ds_strd'):
+				self.ds_strd = self.ds_strd.mean(dim='step')
+			else:
+				pass
+
+			# Special rule for mcpr variable
+			if hasattr(self, 'ds_mcpr'):
+				self.ds_mcpr = self.ds_mcpr.mean(dim='step')
+			else:
+				pass
+
+			# Special rule for tp variable
+			if hasattr(self, 'ds_tp'):
+				self.ds_tp = self.ds_tp.mean(dim='step')
+			else:
+				pass
+
+			# Convert temperature data to Celsius
+			# Air temperature at 2m
+			if hasattr(self, 'ds_t2m'):
+				self.ds_t2m = self.ds_t2m - 273.15
+			else:
+				pass
+			# Sea surface temperature
+			if hasattr(self, 'ds_sst'):
+				self.ds_sst = self.ds_sst - 273.15
+			else:
+				pass
+			# Ice surface temperature
+			if hasattr(self, 'ds_ist'):
+				self.ds_ist = self.ds_ist - 273.15
+			else:
+				pass
+			# Skin temperature
+			if hasattr(self, 'ds_skt'):
+				self.ds_skt = self.ds_skt - 273.15
+			else:
+				pass
+
+			# Initialize buoy data
+
+			# Convert CSV files to shapefile format
+			if not hasattr(self, 'shp_files'):
+				self.csv2shp()
+			else:
+				pass
+
+			for ibuoy in self.data.keys():
+				print(f'\nProcessing {ibuoy}')
+
+				# Add columns for CARRA variables
+				for ivar in self.carra_vars_ll:
+					# Add new column to a dataframe
+					self.data[ibuoy].insert(len(self.data[ibuoy].keys()), ivar, [None] * len(self.data[ibuoy].index[:]), True)
+
+				# loop through the rows using iterrows()
+				for index, row in self.data[ibuoy].iterrows():
+					x_coord = row['geometry'].x
+					y_coord = row['geometry'].y
+					#print(f'''\n{row['# Time']}, {x_coord}, {y_coord}''')
+
+					# Find closes point in space
+					stn_lat = y_coord
+					stn_lon = x_coord
+					if stn_lon < 0:
+						stn_lon += 360.
+					else:
+						pass
+
+					lons, lats = np.meshgrid(ds['longitude'], ds['latitude'])
+					abslat = np.abs(lats - stn_lat)
+					lons[lons < 0] += 360.
+					abslon = np.abs(lons - stn_lon)
+					c = np.maximum(abslon, abslat)
+					x_grid, y_grid = np.where(c == np.min(c))
+					grid_lat = lats[x_grid[0], y_grid[0]]
+					grid_lon = lons[x_grid[0], y_grid[0]]
+
+					# Find closest time stamp in CARRA data
+					target_time = datetime.strptime(row['# Time'], '%Y-%m-%d %H:%M:%S')
+
+					# Look through all varialbles in reanalysis data
+					for ivar in self.carra_vars_ll:
+						#print('{} {:.4f} {:.4f}, Extracting {} for {:.4f} {:.4f}'.format(target_time, stn_lon, stn_lat, ivar, grid_lon, grid_lat))
+						# Select data by closest datetime
+						temp = getattr(self, f'ds_{ivar}')
+						data_carra_dt = temp[ivar].sel(time=target_time, method='nearest')
+						# Debug line
+						#print(f'\n#### ivar: {ivar}; data: {data_carra_dt}')
+						self.data[ibuoy][ivar][index] = float(data_carra_dt[x_grid[0], y_grid[0]].values)
+
+				ibuoy_id = re.findall(r'\d+', ibuoy)[0]
+				os.makedirs(out_dir, exist_ok=True)
+				self.data[ibuoy].to_csv(f'{out_dir}/{ibuoy_id}_ERA5.csv')
+				self.data[ibuoy].set_index("# Time")
+		else:
+			pass
