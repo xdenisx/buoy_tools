@@ -259,6 +259,9 @@ class BUOYtools:
 						gdf = GeoDataFrame(df1, crs=crs, geometry=geometry)
 						gdf.to_file(filename=output_filename, driver='ESRI Shapefile', mode='w')
 						self.shp_files.append(output_filename)
+
+						# Update data with added geo field
+						self.data[filename] = gdf
 					else:
 						pass
 				else:
@@ -278,6 +281,9 @@ class BUOYtools:
 					gdf = GeoDataFrame(df1, crs=crs, geometry=geometry)
 					gdf.to_file(filename=output_filename, driver='ESRI Shapefile', mode='w')
 					self.shp_files.append(output_filename)
+
+					# Update data with added geo field
+					self.data[filename] = gdf
 
 		# Get data bounds from shapefile
 		self.get_bounds()
