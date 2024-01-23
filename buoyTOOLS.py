@@ -585,14 +585,27 @@ class BUOYtools:
 
 					# Find closest time stamp in CARRA data
 					target_time = datetime.strptime(row['# Time'], '%Y-%m-%d %H:%M:%S')
+					start_time = target_time - pd.Timedelta('10Min')
+					end_time = target_time + pd.Timedelta('10Min')
+					print(f'\nTarget time: {target_time}')
+					print(f'Start time: {start_time}')
+					print(f'End time: {end_time}\n')
 
 					# Look through all varialbles in reanalysis data
 					for ivar in self.carra_vars_ll:
-						#print('{} {:.4f} {:.4f}, Extracting {} for {:.4f} {:.4f}'.format(target_time, stn_lon, stn_lat, ivar, grid_lon, grid_lat))
-						# Select data by closest datetime
+						print(f'Variable name: {ivar}')
 						temp = getattr(self, f'ds_{ivar}')
 						data_carra_dt = temp[ivar].sel(time=target_time, method='nearest')
-						self.data[ibuoy][ivar][index] = float(data_carra_dt[x_grid[0], y_grid[0]].values)
+						print(f'''GRIB time: {str(data_carra_dt['time'].values)}\n''')
+						grib_time = str(data_carra_dt['time'].values).split('.')[0]
+						grib_time = datetime.strptime(grib_time, '%Y-%m-%dT%H:%M:%S')
+
+						# If grib time within an interval then write data
+						if grib_time >= start_time and grib_time <= end_time:
+							self.data[ibuoy][ivar][index] = \
+								float(data_carra_dt[x_grid[0], y_grid[0]].values)
+						else:
+							self.data[ibuoy][ivar][index] = None
 
 				ibuoy_id = re.findall(r'\d+', ibuoy)[0]
 				os.makedirs(out_dir, exist_ok=True)
@@ -724,16 +737,30 @@ class BUOYtools:
 
 					# Find closest time stamp in CARRA data
 					target_time = datetime.strptime(row['# Time'], '%Y-%m-%d %H:%M:%S')
+					start_time = target_time - pd.Timedelta('10Min')
+					end_time = target_time + pd.Timedelta('10Min')
+					print(f'\nTarget time: {target_time}')
+					print(f'Start time: {start_time}')
+					print(f'End time: {end_time}\n')
 
 					# Look through all varialbles in reanalysis data
 					for ivar in self.carra_vars_ll:
-						#print('{} {:.4f} {:.4f}, Extracting {} for {:.4f} {:.4f}'.format(target_time, stn_lon, stn_lat, ivar, grid_lon, grid_lat))
-						# Select data by closest datetime
+						print(f'Variable name: {ivar}')
 						temp = getattr(self, f'ds_{ivar}')
 						data_carra_dt = temp[ivar].sel(time=target_time, method='nearest')
-						# Debug line
-						#print(f'\n#### ivar: {ivar}; data: {data_carra_dt}')
-						self.data[ibuoy][ivar][index] = float(data_carra_dt[x_grid[0], y_grid[0]].values)
+						print(f'''GRIB time: {str(data_carra_dt['time'].values)}\n''')
+						grib_time = str(data_carra_dt['time'].values).split('.')[0]
+						grib_time = datetime.strptime(grib_time, '%Y-%m-%dT%H:%M:%S')
+
+						# If grib time within an interval then write data
+						if grib_time>=start_time and grib_time<=end_time:
+							self.data[ibuoy][ivar][index] = \
+								float(data_carra_dt[x_grid[0], y_grid[0]].values)
+						else:
+							self.data[ibuoy][ivar][index] = None
+					print(f'\n')
+
+
 
 				ibuoy_id = re.findall(r'\d+', ibuoy)[0]
 				os.makedirs(out_dir, exist_ok=True)
